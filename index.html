@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Markdown在线笔记本 - GitHub Pages</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+        }
+        .app-container {
+            display: flex;
+            gap: 20px;
+            height: 75vh;
+        }
+        .panel {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .panel-header {
+            background: #3498db;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .panel-content {
+            flex: 1;
+            overflow: auto;
+            padding: 20px;
+        }
+        .files-panel { flex: 1; }
+        .editor-panel { flex: 2; }
+        .preview-panel { flex: 2; }
+        textarea {
+            width: 100%;
+            height: 100%;
+            border: none;
+            resize: none;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            padding: 10px;
+            outline: none;
+        }
+        .preview-content {
+            height: 100%;
+            overflow-y: auto;
+            padding: 10px;
+        }
+        .file-list { list-style: none; }
+        .file-item {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+        }
+        .file-item:hover { background: #f8f9fa; }
+        .file-item.active {
+            background: #e3f2fd;
+            border-left: 4px solid #3498db;
+        }
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+        @media (max-width: 1024px) {
+            .app-container {
+                flex-direction: column;
+                height: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Markdown在线笔记本</h1>
+            <p class="subtitle">基于GitHub Pages构建 | 实时编辑与预览</p>
+            <a href="#" class="github-badge" id="repo-link">
+                <i class="fab fa-github"></i> 在GitHub上查看
+            </a>
+        </header>
+
+        <div class="app-container">
+            <div class="panel files-panel">
+                <div class="panel-header">
+                    <div class="panel-title"><i class="fas fa-folder-open"></i> 我的笔记</div>
+                    <button class="btn-new-file"><i class="fas fa-plus"></i></button>
+                </div>
+                <div class="panel-content">
+                    <ul class="file-list">
+                        <li class="file-item active"><i class="fas fa-file-alt"></i> 欢迎使用.md</li>
+                        <li class="file-item"><i class="fas fa-file-alt"></i> 快速入门指南.md</li>
+                        <li class="file-item"><i class="fas fa-file-alt"></i> Markdown语法参考.md</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="panel editor-panel">
+                <div class="panel-header">
+                    <div class="panel-title"><i class="fas fa-edit"></i> 编辑</div>
+                    <div class="word-count">字数: 0</div>
+                </div>
+                <div class="panel-content">
+                    <textarea id="markdown-editor"># 欢迎使用Markdown在线笔记本
+
+这是一个基于GitHub Pages构建的Markdown笔记本应用。
+
+## 功能特点
+
+- 📝 **实时编辑** - 在左侧编辑，右侧实时预览
+- 💾 **自动保存** - 内容自动保存到浏览器本地存储
+- 📱 **响应式设计** - 在手机、平板和电脑上都能完美使用
+- 🎨 **美观界面** - 简洁现代的UI设计
+
+开始创建您的第一个Markdown笔记吧！</textarea>
+                </div>
+            </div>
+
+            <div class="panel preview-panel">
+                <div class="panel-header">
+                    <div class="panel-title"><i class="fas fa-eye"></i> 预览</div>
+                </div>
+                <div class="panel-content">
+                    <div id="markdown-preview" class="preview-content"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="actions">
+            <button class="btn btn-primary"><i class="fas fa-save"></i> 保存到GitHub</button>
+            <button class="btn btn-secondary"><i class="fas fa-plus"></i> 新建笔记</button>
+        </div>
+    </div>
+
+    <script>
+        const editor = document.getElementById('markdown-editor');
+        const preview = document.getElementById('markdown-preview');
+        
+        function renderPreview() {
+            const markdownText = editor.value;
+            preview.innerHTML = marked.parse(markdownText);
+        }
+        
+        editor.addEventListener('input', renderPreview);
+        renderPreview();
+        
+        // 设置GitHub仓库链接
+        const repoLink = document.getElementById('repo-link');
+        const currentUrl = window.location.href;
+        const repoUrl = currentUrl.replace('https://', '').replace('.github.io', '').split('/')[0];
+        repoLink.href = `https://github.com/${repoUrl}`;
+    </script>
+</body>
+</html>
