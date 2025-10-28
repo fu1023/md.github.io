@@ -7,65 +7,214 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2ecc71;
+            --danger-color: #e74c3c;
+            --warning-color: #f39c12;
+            --dark-color: #2c3e50;
+            --light-color: #ecf0f1;
+            --sidebar-width: 300px;
+            --header-height: 70px;
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
+
         body {
             background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
             color: #333;
             line-height: 1.6;
             min-height: 100vh;
-            padding: 20px;
         }
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-        header {
-            text-align: center;
-            margin-bottom: 30px;
-            padding: 20px;
-            background: rgba(255, 255, 255, 0.9);
-            border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        }
-        h1 {
-            color: #2c3e50;
-            margin-bottom: 10px;
-            font-size: 2.5rem;
-        }
+
         .app-container {
             display: flex;
-            gap: 20px;
-            height: 75vh;
+            height: 100vh;
         }
-        .panel {
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
+
+        /* 侧边栏样式 */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--dark-color);
+            color: white;
             display: flex;
             flex-direction: column;
+            transition: transform 0.3s ease;
         }
-        .panel-header {
-            background: #3498db;
+
+        .sidebar-header {
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.2);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar-title {
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.1);
             color: white;
+            margin-bottom: 10px;
+        }
+
+        .search-box::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .file-actions {
+            display: flex;
+            gap: 5px;
+            margin-top: 10px;
+        }
+
+        .file-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px 0;
+        }
+
+        .file-item {
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-left: 3px solid transparent;
+        }
+
+        .file-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .file-item.active {
+            background: rgba(52, 152, 219, 0.3);
+            border-left-color: var(--primary-color);
+        }
+
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+        }
+
+        .file-actions-buttons {
+            display: flex;
+            gap: 5px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .file-item:hover .file-actions-buttons {
+            opacity: 1;
+        }
+
+        .file-action-btn {
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.6);
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 3px;
+            transition: all 0.2s;
+        }
+
+        .file-action-btn:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* 主内容区样式 */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .header {
+            height: var(--header-height);
+            background: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            z-index: 100;
+        }
+
+        .header-title {
+            font-size: 1.5rem;
+            color: var(--dark-color);
+            font-weight: 600;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .editor-container {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .editor-panel, .preview-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: white;
+            margin: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .panel-header {
             padding: 15px 20px;
+            background: var(--light-color);
+            border-bottom: 1px solid #ddd;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
+
+        .panel-title {
+            font-weight: 600;
+            color: var(--dark-color);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .panel-actions {
+            display: flex;
+            gap: 10px;
+        }
+
         .panel-content {
             flex: 1;
             overflow: auto;
-            padding: 20px;
+            position: relative;
         }
-        .files-panel { flex: 1; }
-        .editor-panel { flex: 2; }
-        .preview-panel { flex: 2; }
+
         textarea {
             width: 100%;
             height: 100%;
@@ -73,131 +222,1011 @@
             resize: none;
             font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
             font-size: 14px;
-            line-height: 1.5;
-            padding: 10px;
+            line-height: 1.6;
+            padding: 20px;
             outline: none;
         }
+
         .preview-content {
+            padding: 20px;
             height: 100%;
             overflow-y: auto;
-            padding: 10px;
         }
-        .file-list { list-style: none; }
-        .file-item {
-            padding: 12px 15px;
-            border-bottom: 1px solid #eee;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-        }
-        .file-item:hover { background: #f8f9fa; }
-        .file-item.active {
-            background: #e3f2fd;
-            border-left: 4px solid #3498db;
-        }
+
+        /* 按钮样式 */
         .btn {
-            padding: 12px 25px;
+            padding: 10px 20px;
             border: none;
-            border-radius: 30px;
+            border-radius: 6px;
             font-weight: 600;
             cursor: pointer;
             display: flex;
             align-items: center;
             gap: 8px;
             transition: all 0.3s ease;
+            font-size: 14px;
         }
+
         .btn-primary {
-            background: #3498db;
+            background: var(--primary-color);
             color: white;
         }
+
+        .btn-primary:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        }
+
+        .btn-success {
+            background: var(--secondary-color);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #27ae60;
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background: var(--danger-color);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .btn-outline:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        /* 预览内容样式 */
+        .preview-content h1,
+        .preview-content h2,
+        .preview-content h3 {
+            margin-top: 1.5em;
+            margin-bottom: 0.8em;
+            color: var(--dark-color);
+        }
+
+        .preview-content h1 {
+            border-bottom: 2px solid #eee;
+            padding-bottom: 0.3em;
+        }
+
+        .preview-content h2 {
+            border-bottom: 1px solid #eee;
+            padding-bottom: 0.3em;
+        }
+
+        .preview-content p {
+            margin-bottom: 1em;
+        }
+
+        .preview-content blockquote {
+            border-left: 4px solid var(--primary-color);
+            padding-left: 1em;
+            margin-left: 0;
+            color: #7f8c8d;
+            font-style: italic;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 0 5px 5px 0;
+        }
+
+        .preview-content pre {
+            background: #2c3e50;
+            color: white;
+            padding: 1em;
+            border-radius: 5px;
+            overflow-x: auto;
+            margin: 1em 0;
+        }
+
+        .preview-content code {
+            background: #f8f9fa;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            color: #e74c3c;
+        }
+
+        .preview-content pre code {
+            background: none;
+            color: inherit;
+            padding: 0;
+        }
+
+        .preview-content table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 1em 0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .preview-content th,
+        .preview-content td {
+            border: 1px solid #ddd;
+            padding: 12px 15px;
+            text-align: left;
+        }
+
+        .preview-content th {
+            background: var(--light-color);
+            font-weight: 600;
+        }
+
+        .preview-content tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        .preview-content ul,
+        .preview-content ol {
+            margin-left: 1.5em;
+            margin-bottom: 1em;
+        }
+
+        .preview-content li {
+            margin-bottom: 0.5em;
+        }
+
+        /* 状态指示器 */
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: #7f8c8d;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--secondary-color);
+        }
+
+        .status-dot.saving {
+            background: var(--warning-color);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        /* 模态框样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            width: 90%;
+            max-width: 500px;
+        }
+
+        .modal-header {
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 1.3rem;
+            color: var(--dark-color);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .form-input:focus {
+            border-color: var(--primary-color);
+            outline: none;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        /* 响应式设计 */
         @media (max-width: 1024px) {
-            .app-container {
+            .editor-container {
                 flex-direction: column;
-                height: auto;
             }
+            
+            .editor-panel, .preview-panel {
+                margin: 10px;
+                min-height: 400px;
+            }
+            
+            .sidebar {
+                position: fixed;
+                left: 0;
+                top: 0;
+                height: 100%;
+                transform: translateX(-100%);
+                z-index: 1000;
+            }
+            
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            
+            .mobile-menu-btn {
+                display: block;
+            }
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--dark-color);
+            cursor: pointer;
+        }
+
+        /* 空状态样式 */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #7f8c8d;
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            color: #bdc3c7;
+        }
+
+        .empty-state h3 {
+            margin-bottom: 10px;
+            color: #95a5a6;
+        }
+
+        /* 滚动条样式 */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>Markdown在线笔记本</h1>
-            <p class="subtitle">基于GitHub Pages构建 | 实时编辑与预览</p>
-            <a href="#" class="github-badge" id="repo-link">
-                <i class="fab fa-github"></i> 在GitHub上查看
-            </a>
-        </header>
-
-        <div class="app-container">
-            <div class="panel files-panel">
-                <div class="panel-header">
-                    <div class="panel-title"><i class="fas fa-folder-open"></i> 我的笔记</div>
-                    <button class="btn-new-file"><i class="fas fa-plus"></i></button>
+    <div class="app-container">
+        <!-- 侧边栏 -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-title">
+                    <i class="fas fa-book"></i>
+                    <span>我的笔记本</span>
                 </div>
-                <div class="panel-content">
-                    <ul class="file-list">
-                        <li class="file-item active"><i class="fas fa-file-alt"></i> 欢迎使用.md</li>
-                        <li class="file-item"><i class="fas fa-file-alt"></i> 快速入门指南.md</li>
-                        <li class="file-item"><i class="fas fa-file-alt"></i> Markdown语法参考.md</li>
-                    </ul>
+                <input type="text" class="search-box" placeholder="搜索笔记..." id="search-box">
+                <div class="file-actions">
+                    <button class="btn btn-success btn-sm" id="new-file-btn">
+                        <i class="fas fa-plus"></i> 新建笔记
+                    </button>
+                    <button class="btn btn-outline btn-sm" id="import-btn">
+                        <i class="fas fa-file-import"></i> 导入
+                    </button>
                 </div>
             </div>
-
-            <div class="panel editor-panel">
-                <div class="panel-header">
-                    <div class="panel-title"><i class="fas fa-edit"></i> 编辑</div>
-                    <div class="word-count">字数: 0</div>
-                </div>
-                <div class="panel-content">
-                    <textarea id="markdown-editor"># 欢迎使用Markdown在线笔记本
-
-这是一个基于GitHub Pages构建的Markdown笔记本应用。
-
-## 功能特点
-
-- 📝 **实时编辑** - 在左侧编辑，右侧实时预览
-- 💾 **自动保存** - 内容自动保存到浏览器本地存储
-- 📱 **响应式设计** - 在手机、平板和电脑上都能完美使用
-- 🎨 **美观界面** - 简洁现代的UI设计
-
-开始创建您的第一个Markdown笔记吧！</textarea>
-                </div>
-            </div>
-
-            <div class="panel preview-panel">
-                <div class="panel-header">
-                    <div class="panel-title"><i class="fas fa-eye"></i> 预览</div>
-                </div>
-                <div class="panel-content">
-                    <div id="markdown-preview" class="preview-content"></div>
-                </div>
+            <div class="file-list" id="file-list">
+                <!-- 文件列表将通过JavaScript动态生成 -->
             </div>
         </div>
 
-        <div class="actions">
-            <button class="btn btn-primary"><i class="fas fa-save"></i> 保存到GitHub</button>
-            <button class="btn btn-secondary"><i class="fas fa-plus"></i> 新建笔记</button>
+        <!-- 主内容区 -->
+        <div class="main-content">
+            <div class="header">
+                <div class="header-left">
+                    <button class="mobile-menu-btn" id="mobile-menu-btn">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <span class="header-title" id="current-file-title">未选择文件</span>
+                </div>
+                <div class="header-actions">
+                    <div class="status-indicator">
+                        <div class="status-dot" id="status-dot"></div>
+                        <span id="status-text">已保存</span>
+                    </div>
+                    <button class="btn btn-outline" id="export-btn">
+                        <i class="fas fa-file-export"></i> 导出
+                    </button>
+                    <button class="btn btn-primary" id="save-github-btn">
+                        <i class="fab fa-github"></i> 保存到GitHub
+                    </button>
+                </div>
+            </div>
+
+            <div class="editor-container">
+                <div class="editor-panel">
+                    <div class="panel-header">
+                        <div class="panel-title">
+                            <i class="fas fa-edit"></i>
+                            <span>编辑</span>
+                        </div>
+                        <div class="panel-actions">
+                            <span id="word-count">0 字</span>
+                            <button class="btn btn-sm btn-outline" id="format-help-btn">
+                                <i class="fas fa-question-circle"></i> 语法帮助
+                            </button>
+                        </div>
+                    </div>
+                    <div class="panel-content">
+                        <textarea id="markdown-editor" placeholder="开始编写您的Markdown内容..."></textarea>
+                    </div>
+                </div>
+
+                <div class="preview-panel">
+                    <div class="panel-header">
+                        <div class="panel-title">
+                            <i class="fas fa-eye"></i>
+                            <span>预览</span>
+                        </div>
+                        <div class="panel-actions">
+                            <button class="btn btn-sm btn-outline" id="fullscreen-preview-btn">
+                                <i class="fas fa-expand"></i> 全屏
+                            </button>
+                        </div>
+                    </div>
+                    <div class="panel-content">
+                        <div id="markdown-preview" class="preview-content"></div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <script>
-        const editor = document.getElementById('markdown-editor');
-        const preview = document.getElementById('markdown-preview');
-        
-        function renderPreview() {
-            const markdownText = editor.value;
-            preview.innerHTML = marked.parse(markdownText);
+    <!-- 新建文件模态框 -->
+    <div class="modal" id="new-file-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">新建笔记</h3>
+            </div>
+            <div class="form-group">
+                <label class="form-label">文件名称</label>
+                <input type="text" class="form-input" id="new-file-name" placeholder="请输入文件名称（包含.md扩展名）">
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-outline" id="cancel-new-file">取消</button>
+                <button class="btn btn-primary" id="confirm-new-file">创建</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 重命名文件模态框 -->
+    <div class="modal" id="rename-file-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">重命名文件</h3>
+            </div>
+            <div class="form-group">
+                <label class="form-label">新文件名称</label>
+                <input type="text" class="form-input" id="rename-file-name" placeholder="请输入新文件名称">
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-outline" id="cancel-rename">取消</button>
+                <button class="btn btn-primary" id="confirm-rename">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 语法帮助模态框 -->
+    <div class="modal" id="help-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Markdown语法帮助</h3>
+            </div>
+            <div class="preview-content">
+                <h4>基本语法</h4>
+                <ul>
+                    <li><code># 标题</code> - 一级标题</li>
+                    <li><code>## 标题</code> - 二级标题</li>
+                    <li><code>**粗体**</code> - 粗体文本</li>
+                    <li><code>*斜体*</code> - 斜体文本</li>
+                    <li><code>- 项目</code> - 无序列表</li>
+                    <li><code>1. 项目</code> - 有序列表</li>
+                    <li><code>[链接](URL)</code> - 超链接</li>
+                    <li><code>![图片](URL)</code> - 插入图片</li>
+                </ul>
+                
+                <h4>高级语法</h4>
+                <ul>
+                    <li><code>```代码块```</code> - 代码块</li>
+                    <li><code>&gt; 引用</code> - 引用文本</li>
+                    <li><code>| 表格 |</code> - 创建表格</li>
+                    <li><code>---</code> - 水平分割线</li>
+                </ul>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-primary" id="close-help">关闭</button>
+            </div>
+        </div>
+    </div>
+
+        <!-- 保存到 GitHub 的模态框（通过 Gist） -->
+        <div class="modal" id="github-save-modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">保存到 GitHub Gist</h3>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Gist 文件名</label>
+                    <input type="text" class="form-input" id="github-filename" placeholder="例如：note.md">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">GitHub 个人访问令牌 (只需包含 gist 权限)</label>
+                    <input type="password" class="form-input" id="github-token" placeholder="输入您的 Personal Access Token (PAT)">
+                </div>
+                <div class="form-group">
+                    <label><input type="checkbox" id="github-public"> 公开 Gist（未选中则为私有）</label>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn btn-outline" id="github-save-cancel">取消</button>
+                    <button class="btn btn-primary" id="github-save-confirm">保存到 Gist</button>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            // 应用状态管理
+        const AppState = {
+            currentFile: null,
+            files: JSON.parse(localStorage.getItem('markdownFiles')) || [],
+            unsavedChanges: false,
+            autoSaveTimeout: null
+        };
+
+        // DOM元素
+        const elements = {
+            sidebar: document.getElementById('sidebar'),
+            fileList: document.getElementById('file-list'),
+            markdownEditor: document.getElementById('markdown-editor'),
+            markdownPreview: document.getElementById('markdown-preview'),
+            currentFileTitle: document.getElementById('current-file-title'),
+            wordCount: document.getElementById('word-count'),
+            statusDot: document.getElementById('status-dot'),
+            statusText: document.getElementById('status-text'),
+            searchBox: document.getElementById('search-box'),
+            mobileMenuBtn: document.getElementById('mobile-menu-btn')
+        };
+
+        // 初始化应用
+        function initApp() {
+            renderFileList();
+            attachEventListeners();
+            
+            // 如果有文件，打开第一个文件
+            if (AppState.files.length > 0) {
+                openFile(AppState.files[0].id);
+            } else {
+                // 创建默认欢迎文件
+                createWelcomeFile();
+            }
         }
-        
-        editor.addEventListener('input', renderPreview);
-        renderPreview();
-        
-        // 设置GitHub仓库链接
-        const repoLink = document.getElementById('repo-link');
-        const currentUrl = window.location.href;
-        const repoUrl = currentUrl.replace('https://', '').replace('.github.io', '').split('/')[0];
-        repoLink.href = `https://github.com/${repoUrl}`;
+
+        // 创建欢迎文件
+        function createWelcomeFile() {
+            const welcomeFile = {
+                id: generateId(),
+                name: '欢迎使用.md',
+                content: `# 欢迎使用 Markdown 在线笔记本
+
+## 🚀 功能特色
+
+- **实时预览** - 左侧编辑，右侧实时预览
+- **自动保存** - 内容自动保存到浏览器本地存储
+- **文件管理** - 创建、重命名、删除文件
+- **语法高亮** - 代码块语法高亮显示
+- **响应式设计** - 在手机、平板和电脑上都能完美使用
+
+## 📝 快速开始
+
+1. 在左侧边栏点击"新建笔记"创建新文件
+2. 在编辑区编写 Markdown 内容
+3. 在预览区查看实时渲染效果
+4. 使用 Ctrl+S 快速保存
+
+## 💡 小贴士
+
+- 使用 \\`\\`\\`代码块\\`\\`\\` 来插入代码
+- 使用 **粗体** 和 *斜体* 强调重要内容
+- 使用 > 创建引用块
+- 使用 - 或 * 创建列表
+
+开始创作您的第一个 Markdown 笔记吧！ 🎉
+`,
+                lastModified: new Date().toISOString()
+            };
+            
+            AppState.files.push(welcomeFile);
+            saveToStorage();
+            renderFileList();
+            openFile(welcomeFile.id);
+        }
+
+        // 生成唯一ID
+        function generateId() {
+            return Date.now().toString(36) + Math.random().toString(36).substr(2);
+        }
+
+        // 渲染文件列表
+        function renderFileList(filterText = '') {
+            elements.fileList.innerHTML = '';
+            
+            const filteredFiles = AppState.files.filter(file => 
+                file.name.toLowerCase().includes(filterText.toLowerCase())
+            );
+            
+            if (filteredFiles.length === 0) {
+                elements.fileList.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-folder-open"></i>
+                        <h3>暂无笔记</h3>
+                        <p>点击"新建笔记"创建您的第一个Markdown文件</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            filteredFiles.forEach(file => {
+                const fileItem = document.createElement('div');
+                fileItem.className = `file-item ${AppState.currentFile?.id === file.id ? 'active' : ''}`;
+                fileItem.innerHTML = `
+                    <div class="file-info">
+                        <i class="fas fa-file-alt"></i>
+                        <span>${file.name}</span>
+                    </div>
+                    <div class="file-actions-buttons">
+                        <button class="file-action-btn rename-btn" title="重命名">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="file-action-btn delete-btn" title="删除">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+                
+                fileItem.addEventListener('click', (e) => {
+                    if (!e.target.closest('.file-actions-buttons')) {
+                        openFile(file.id);
+                    }
+                });
+                
+                const renameBtn = fileItem.querySelector('.rename-btn');
+                const deleteBtn = fileItem.querySelector('.delete-btn');
+                
+                renameBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    showRenameModal(file.id);
+                });
+                
+                deleteBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    deleteFile(file.id);
+                });
+                
+                elements.fileList.appendChild(fileItem);
+            });
+        }
+
+        // 打开文件
+        function openFile(fileId) {
+            const file = AppState.files.find(f => f.id === fileId);
+            if (!file) return;
+            
+            // 保存当前文件的更改
+            if (AppState.currentFile && AppState.unsavedChanges) {
+                saveCurrentFile();
+            }
+            
+            AppState.currentFile = file;
+            AppState.unsavedChanges = false;
+            
+            elements.markdownEditor.value = file.content;
+            elements.currentFileTitle.textContent = file.name;
+            updatePreview();
+            updateWordCount();
+            updateStatus('已加载');
+            
+            renderFileList(elements.searchBox.value);
+        }
+
+        // 更新预览
+        function updatePreview() {
+            const markdownText = elements.markdownEditor.value;
+            elements.markdownPreview.innerHTML = marked.parse(markdownText);
+        }
+
+        // 更新字数统计
+        function updateWordCount() {
+            const text = elements.markdownEditor.value;
+            const words = text.trim() === '' ? 0 : text.trim().split(/\s+/).length;
+            const characters = text.length;
+            elements.wordCount.textContent = `${words} 词, ${characters} 字`;
+        }
+
+        // 更新状态
+        function updateStatus(status, isSaving = false) {
+            elements.statusText.textContent = status;
+            elements.statusDot.className = `status-dot ${isSaving ? 'saving' : ''}`;
+        }
+
+        // 保存当前文件
+        function saveCurrentFile() {
+            if (!AppState.currentFile) return;
+            
+            AppState.currentFile.content = elements.markdownEditor.value;
+            AppState.currentFile.lastModified = new Date().toISOString();
+            AppState.unsavedChanges = false;
+            
+            saveToStorage();
+            updateStatus('已保存');
+        }
+
+        // 保存到本地存储
+        function saveToStorage() {
+            localStorage.setItem('markdownFiles', JSON.stringify(AppState.files));
+        }
+
+        // 新建文件
+        function createNewFile(name) {
+            if (!name.endsWith('.md')) {
+                name += '.md';
+            }
+            
+            const newFile = {
+                id: generateId(),
+                name: name,
+                content: `# ${name.replace('.md', '')}\n\n开始编写您的内容...`,
+                lastModified: new Date().toISOString()
+            };
+            
+            AppState.files.push(newFile);
+            saveToStorage();
+            renderFileList(elements.searchBox.value);
+            openFile(newFile.id);
+            
+            // 隐藏模态框
+            document.getElementById('new-file-modal').classList.remove('active');
+            document.getElementById('new-file-name').value = '';
+        }
+
+        // 重命名文件
+        function renameFile(fileId, newName) {
+            if (!newName.endsWith('.md')) {
+                newName += '.md';
+            }
+            
+            const file = AppState.files.find(f => f.id === fileId);
+            if (file) {
+                file.name = newName;
+                file.lastModified = new Date().toISOString();
+                saveToStorage();
+                
+                if (AppState.currentFile?.id === fileId) {
+                    elements.currentFileTitle.textContent = newName;
+                }
+                
+                renderFileList(elements.searchBox.value);
+                document.getElementById('rename-file-modal').classList.remove('active');
+            }
+        }
+
+        // 删除文件
+        function deleteFile(fileId) {
+            if (!confirm('确定要删除这个文件吗？此操作不可撤销。')) {
+                return;
+            }
+            
+            AppState.files = AppState.files.filter(f => f.id !== fileId);
+            saveToStorage();
+            
+            if (AppState.currentFile?.id === fileId) {
+                AppState.currentFile = null;
+                elements.markdownEditor.value = '';
+                elements.currentFileTitle.textContent = '未选择文件';
+                updatePreview();
+                updateWordCount();
+            }
+            
+            renderFileList(elements.searchBox.value);
+        }
+
+        // 显示重命名模态框
+        function showRenameModal(fileId) {
+            const file = AppState.files.find(f => f.id === fileId);
+            if (file) {
+                document.getElementById('rename-file-name').value = file.name.replace('.md', '');
+                document.getElementById('rename-file-modal').classList.add('active');
+                
+                // 设置确认按钮的事件处理
+                const confirmBtn = document.getElementById('confirm-rename');
+                confirmBtn.onclick = () => renameFile(fileId, document.getElementById('rename-file-name').value);
+            }
+        }
+
+        // 绑定事件监听器
+        function attachEventListeners() {
+            // 编辑器输入事件
+            elements.markdownEditor.addEventListener('input', () => {
+                updatePreview();
+                updateWordCount();
+                
+                if (!AppState.unsavedChanges) {
+                    AppState.unsavedChanges = true;
+                    updateStatus('未保存');
+                }
+                
+                // 自动保存（防抖）
+                clearTimeout(AppState.autoSaveTimeout);
+                AppState.autoSaveTimeout = setTimeout(() => {
+                    if (AppState.currentFile) {
+                        saveCurrentFile();
+                    }
+                }, 2000);
+            });
+            
+            // 搜索框事件
+            elements.searchBox.addEventListener('input', (e) => {
+                renderFileList(e.target.value);
+            });
+            
+            // 移动端菜单按钮
+            elements.mobileMenuBtn.addEventListener('click', () => {
+                elements.sidebar.classList.toggle('active');
+            });
+            
+            // 新建文件按钮
+            document.getElementById('new-file-btn').addEventListener('click', () => {
+                document.getElementById('new-file-modal').classList.add('active');
+                document.getElementById('new-file-name').focus();
+            });
+            
+            // 确认新建文件
+            document.getElementById('confirm-new-file').addEventListener('click', () => {
+                const fileName = document.getElementById('new-file-name').value.trim();
+                if (fileName) {
+                    createNewFile(fileName);
+                }
+            });
+            
+            // 取消新建文件
+            document.getElementById('cancel-new-file').addEventListener('click', () => {
+                document.getElementById('new-file-modal').classList.remove('active');
+            });
+            
+            // 取消重命名
+            document.getElementById('cancel-rename').addEventListener('click', () => {
+                document.getElementById('rename-file-modal').classList.remove('active');
+            });
+            
+            // 语法帮助
+            document.getElementById('format-help-btn').addEventListener('click', () => {
+                document.getElementById('help-modal').classList.add('active');
+            });
+            
+            // 关闭帮助
+            document.getElementById('close-help').addEventListener('click', () => {
+                document.getElementById('help-modal').classList.remove('active');
+            });
+            
+            // 保存到GitHub（演示功能）
+                    // 保存到GitHub（通过创建 Gist）
+                    document.getElementById('save-github-btn').addEventListener('click', () => {
+                        if (!AppState.currentFile) {
+                            alert('请先选择一个文件');
+                            return;
+                        }
+                        // 打开保存到 GitHub 的模态框
+                        document.getElementById('github-filename').value = AppState.currentFile.name;
+                        const savedToken = sessionStorage.getItem('github_token') || '';
+                        document.getElementById('github-token').value = savedToken;
+                        document.getElementById('github-save-modal').classList.add('active');
+                    });
+            
+            // 导出功能
+            document.getElementById('export-btn').addEventListener('click', () => {
+                if (!AppState.currentFile) {
+                    alert('请先选择一个文件');
+                    return;
+                }
+                
+                const blob = new Blob([AppState.currentFile.content], { type: 'text/markdown' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = AppState.currentFile.name;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            });
+            
+            // 全屏预览
+            document.getElementById('fullscreen-preview-btn').addEventListener('click', () => {
+                if (elements.markdownPreview.requestFullscreen) {
+                    elements.markdownPreview.requestFullscreen();
+                }
+            });
+            
+            // 键盘快捷键
+            document.addEventListener('keydown', (e) => {
+                if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                    e.preventDefault();
+                    if (AppState.currentFile) {
+                        saveCurrentFile();
+                        updateStatus('已保存');
+                    }
+                }
+            });
+            
+            // 点击模态框外部关闭
+            document.querySelectorAll('.modal').forEach(modal => {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        modal.classList.remove('active');
+                    }
+                });
+            });
+            
+            // 输入框回车确认
+            document.getElementById('new-file-name').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    document.getElementById('confirm-new-file').click();
+                }
+            });
+            
+            document.getElementById('rename-file-name').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    document.getElementById('confirm-rename').click();
+                }
+            });
+        }
+
+        // GitHub Gist 模态框事件处理
+        document.getElementById('github-save-cancel').addEventListener('click', () => {
+            document.getElementById('github-save-modal').classList.remove('active');
+        });
+
+        document.getElementById('github-save-confirm').addEventListener('click', async () => {
+            const token = document.getElementById('github-token').value.trim();
+            if (!token) {
+                alert(`需要提供 GitHub 个人访问令牌 (包含 gist 权限)。\n请在 GitHub -> Settings -> Developer settings -> Personal access tokens 生成一个带 gist 权限的 token。`);
+                return;
+            }
+
+            if (!AppState.currentFile) {
+                alert('当前无打开的文件');
+                return;
+            }
+
+            const filename = document.getElementById('github-filename').value.trim() || AppState.currentFile.name || 'note.md';
+            const isPublic = document.getElementById('github-public').checked;
+
+            // 记住 token（仅本会话）
+            sessionStorage.setItem('github_token', token);
+
+            // 关闭模态框并开始上传
+            document.getElementById('github-save-modal').classList.remove('active');
+            updateStatus('正在保存到 GitHub...', true);
+
+            try {
+                const result = await createGist(token, filename, AppState.currentFile.content, isPublic);
+                updateStatus('已保存到 Gist');
+                if (result && result.html_url) {
+                    alert('Gist 创建成功：\n' + result.html_url + '\n（已在新窗口打开）');
+                    window.open(result.html_url, '_blank');
+                } else {
+                    alert('Gist 创建成功（返回信息缺失 URL）');
+                }
+            } catch (err) {
+                console.error(err);
+                updateStatus('保存失败');
+                alert('保存到 Gist 失败：' + (err.message || JSON.stringify(err)));
+            }
+        });
+
+        // 创建 Gist 的函数
+        async function createGist(token, filename, content, isPublic = false) {
+            const payload = {
+                description: filename,
+                public: !!isPublic,
+                files: {}
+            };
+            payload.files[filename] = { content };
+
+            const resp = await fetch('https://api.github.com/gists', {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'token ' + token,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (!resp.ok) {
+                const text = await resp.text();
+                throw new Error(resp.status + ' ' + text);
+            }
+
+            return await resp.json();
+        }
+
+        // 在页面关闭/刷新前提示未保存内容
+        window.addEventListener('beforeunload', (e) => {
+            if (AppState.unsavedChanges) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
+
+        // 初始化应用
+        document.addEventListener('DOMContentLoaded', initApp);
     </script>
 </body>
 </html>
