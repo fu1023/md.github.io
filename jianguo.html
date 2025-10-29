@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>坚果云（WebDAV）配置与文件列表</title>
+  <style>
+    body{font-family:Segoe UI,Arial, Helvetica, sans-serif;margin:20px}
+    label{display:block;margin-top:8px}
+    input[type=text], input[type=password]{width:100%;padding:6px;margin-top:4px}
+    .row{display:flex;gap:8px}
+    .row > *{flex:1}
+    button{margin-top:10px;padding:8px 12px}
+    #fileList{margin-top:16px;border-collapse:collapse;width:100%}
+    #fileList th,#fileList td{border:1px solid #ddd;padding:8px;text-align:left}
+    .note{color:#666;font-size:0.9em;margin-top:8px}
+  </style>
+</head>
+<body>
+  <h2>坚果云 WebDAV 配置</h2>
+  <p class="note">在下方输入你的坚果云（或其它 WebDAV）服务器信息，点击“保存为 config.json”会把配置导出为文件；点击“显示文件列表”会尝试列出远程目录下的文件（服务器必须允许 CORS）。</p>
+
+  <label>WebDAV 服务器 URL
+    <input id="url" type="text" placeholder="例如: https://dav.jianguoyun.com/dav/" />
+  </label>
+  <div class="row">
+    <label style="flex:2">用户名
+      <input id="user" type="text" placeholder="你的坚果云用户名/邮箱" />
+    </label>
+    <label style="flex:1">记住用户名
+      <input id="rememberUser" type="checkbox" style="margin-left:8px" />
+    </label>
+  </div>
+  <label>密码（会话中使用，不会自动写入磁盘，除非你点击保存）
+    <input id="pass" type="password" placeholder="WebDAV 密码" />
+  </label>
+  <label>远程目录（相对于 WebDAV 根，例如：/ 或 Documents/notes）
+    <input id="folder" type="text" placeholder="/" />
+  </label>
+
+  <div class="row">
+    <button id="saveConfig">保存为 config.json</button>
+    <button id="loadConfig">从 config.json 加载</button>
+    <input id="configFileInput" type="file" accept="application/json" style="display:none" />
+  </div>
+
+  <div class="row">
+    <button id="showList">显示文件列表</button>
+    <button id="clearStored">清除本地保存配置</button>
+  </div>
+
+  <div id="status" class="note">状态：就绪</div>
+
+  <table id="fileList" aria-live="polite">
+    <thead><tr><th>#</th><th>文件名 / 路径</th><th>大小</th><th>最后修改</th></tr></thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    // 简单的前端实现：保存 config.json（触发下载）和通过 PROPFIND 显示文件列表
+    const urlEl = document.getElementById('url');
+    const userEl = document.getElementById('user');
+    const passEl = document.getElementById('pass');
+    const folderEl = document.getElementById('folder');
+    const rememberUserEl = document.getElementById('rememberUser');
+    const saveConfigBtn = document.getElementById('saveConfig');
+    const loadConfigBtn = document.getElementById('loadConfig');
+    const configFileInput = document.getElementById('configFileInput');
+    const showListBtn = document.getElementById('showList');
+    const clearStoredBtn = document.getElementById('clearStored');
+    const statusEl = document.getElementById('status');
+    const fileListBody = document.querySelector('#fileList tbody');
+
+    const STORAGE_KEY = 'jianguo_webdav_config';
+
+    function setStatus(txt){ statusEl.textContent = '状态：' + txt; }
+
+    function saveConfigToFile(){
+      const cfg = { url: urlEl.value.trim(), user: userEl.value.trim(), folder: folderEl.value.trim() || '/', rememberUser: rememberUserEl.checked };
+      const json = JSON.stringify(cfg, null, 2);
+      const blob = new Blob([json], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'config.json';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(a.href);
+      setStatus('已生成 config.json 下载');
+      // 如果勾选记住用户名，保存到 localStorage（不保存密码）
+      if (rememberUserEl.checked){
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(cfg));
+        setStatus('已保存配置（不含密码）到 localStorage');
+      }
+    }
+
+    function loadConfigFromFile(file){
+      const reader = new FileReader();
+      reader.onload = ()=>{
+        try{
+          const cfg = JSON.parse(reader.result);
+          urlEl.value = cfg.url || '';
+          userEl.value = cfg.user || '';
+          folderEl.value = cfg.folder || '/';
+          rememberUserEl.checked = !!cfg.rememberUser;
+          setStatus('已从文件加载配置（注意未加载密码）');
+        }catch(e){ setStatus('解析 config.json 失败'); }
+      };
+      reader.readAsText(file, 'utf-8');
+    }
+
+    function loadConfigFromLocal(){
+      try{
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return;
+        const cfg = JSON.parse(raw);
+        urlEl.value = cfg.url || '';
+        userEl.value = cfg.user || '';
+        folderEl.value = cfg.folder || '/';
+        rememberUserEl.checked = !!cfg.rememberUser;
+        setStatus('已载入本地保存的配置（不含密码）');
+      }catch(e){ /* ignore */ }
+    }
+
+    function clearStored(){ localStorage.removeItem(STORAGE_KEY); setStatus('已清除本地保存配置'); }
+
+    function buildAuthHeader(){
+      const user = userEl.value || '';
+      const pass = passEl.value || '';
+      if (!user || !pass) return null;
+      return 'Basic ' + btoa(user + ':' + pass);
+    }
+
+    function normalizeFolderUrl(url, folder){
+      if (!url) return null;
+      if (!url.endsWith('/')) url += '/';
+      folder = folder || '/';
+      if (folder.startsWith('/')) folder = folder.substring(1);
+      return url + folder.replace(/\\/g, '/');
+    }
+
+    async function propfindList(folderUrl){
+      const auth = buildAuthHeader();
+      if (!auth) throw new Error('请先输入用户名和密码');
+      const body = `<?xml version="1.0"?>\n<D:propfind xmlns:D=\"DAV:\">\n  <D:allprop/>\n</D:propfind>`;
+      const res = await fetch(folderUrl, { method: 'PROPFIND', headers: { 'Authorization': auth, 'Content-Type': 'application/xml', 'Depth':'1' }, body });
+      if (!res.ok) throw new Error('PROPFIND 失败: ' + res.status + ' ' + res.statusText);
+      const txt = await res.text();
+      const doc = new DOMParser().parseFromString(txt, 'application/xml');
+      const responses = Array.from(doc.getElementsByTagNameNS('DAV:', 'response'));
+      const items = responses.map(r => {
+        const hrefEl = r.getElementsByTagNameNS('DAV:', 'href')[0];
+        const href = hrefEl ? hrefEl.textContent : null;
+        // try to get size and lastmodified
+        let size = '';
+        let lastmod = '';
+        try{
+          const prop = r.getElementsByTagNameNS('DAV:', 'propstat')[0];
+          if (prop){
+            const p = prop.getElementsByTagNameNS('DAV:', 'prop')[0];
+            if (p){
+              const lenEl = p.getElementsByTagNameNS('DAV:', 'getcontentlength')[0];
+              const lmEl = p.getElementsByTagNameNS('DAV:', 'getlastmodified')[0];
+              if (lenEl) size = lenEl.textContent || '';
+              if (lmEl) lastmod = lmEl.textContent || '';
+            }
+          }
+        }catch(e){}
+        return { href, size, lastmod };
+      }).filter(i=>i.href);
+      return items;
+    }
+
+    function basenameFromHref(href){
+      try{ const u = new URL(href); const seg = u.pathname.split('/').filter(Boolean); return seg.length? decodeURIComponent(seg[seg.length-1]) : href; }catch(e){ const seg = href.split('/').filter(Boolean); return seg.length? decodeURIComponent(seg[seg.length-1]) : href; }
+    }
+
+    async function showFileList(){
+      try{
+        fileListBody.innerHTML = '';
+        const url = urlEl.value.trim();
+        const folder = folderEl.value.trim() || '/';
+        const folderUrl = normalizeFolderUrl(url, folder);
+        if (!folderUrl) { setStatus('请先填写服务器地址'); return; }
+        setStatus('正在请求远程文件列表…');
+        const items = await propfindList(folderUrl);
+        if (!items.length){ setStatus('未发现文件（或服务器不支持 PROPFIND/CORS）'); return; }
+        items.forEach((it, idx)=>{
+          const tr = document.createElement('tr');
+          const name = basenameFromHref(it.href);
+          tr.innerHTML = `<td>${idx+1}</td><td><a href="#" data-href="${it.href}">${name}</a></td><td>${it.size||''}</td><td>${it.lastmod||''}</td>`;
+          fileListBody.appendChild(tr);
+        });
+        // click handler to load into new tab or fetch
+        fileListBody.querySelectorAll('a[data-href]').forEach(a=>{
+          a.addEventListener('click', async (ev)=>{
+            ev.preventDefault();
+            const href = a.getAttribute('data-href');
+            // try opening directly (may require auth)
+            const auth = buildAuthHeader();
+            try{
+              const res = await fetch(href, { method:'GET', headers: auth? { 'Authorization': auth } : {} });
+              if (!res.ok) { alert('获取文件失败: ' + res.status); return; }
+              const txt = await res.text();
+              // open new window with content displayed
+              const win = window.open('', '_blank');
+              win.document.write('<pre>' + escapeHtml(txt) + '</pre>');
+            }catch(e){ alert('读取文件失败：' + e.message); }
+          });
+        });
+        setStatus('已列出 ' + items.length + ' 项');
+      }catch(e){ setStatus('列出失败: ' + e.message); }
+    }
+
+    function escapeHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+    // events
+    saveConfigBtn.addEventListener('click', saveConfigToFile);
+    loadConfigBtn.addEventListener('click', ()=> configFileInput.click());
+    configFileInput.addEventListener('change', (ev)=>{
+      const f = ev.target.files && ev.target.files[0];
+      if (f) loadConfigFromFile(f);
+      configFileInput.value = '';
+    });
+    showListBtn.addEventListener('click', showFileList);
+    clearStoredBtn.addEventListener('click', clearStored);
+
+    // on load, try to populate from localStorage
+    loadConfigFromLocal();
+
+  </script>
+</body>
+</html>
